@@ -160,6 +160,32 @@ class Score:
         self.img = self.fonto.render(f"スコア:{self.score}", 0, self.color)
         screen.blit(self.img, self.rct)
 
+class Explosion:
+    """
+    爆発に関するクラス
+    """
+    def __init__(self, xy: tuple[int, int]):
+        """
+        引数 xy：爆発位置
+        """
+        self.img = pg.image.load("fig/explosion.gif")
+        self.img_flip = pg.transform.flip(self.img, True, True)  # 爆破画像flip
+        self.img_lis = [self.img, self.img_flip]
+        self.rct = self.img.get_rect()
+        self.rct.center = xy
+        self.life = 25  # 爆発の残り表示時間
+        self.img_idx = 0
+
+    def update(self, screen: pg.Surface):
+        """
+        爆発画像を画面に転送する
+        引数 screen：画面Surface
+        """
+        self.life -= 1
+        if self.life > 0: 
+            self.img_idx = int(self.life // 10 % 2)
+            screen.blit(self.img_lis[self.img_idx], self.rct)
+
 
 def main():
     pg.display.set_caption("たたかえ！こうかとん")
@@ -171,6 +197,7 @@ def main():
     score = Score()
     beam = None
     beams = [] # ビームのリスト
+    explosions = []
     clock = pg.time.Clock()
     tmr = 0
 
@@ -186,7 +213,7 @@ def main():
         
         # if bomb is not None:
         for bomb in bombs:
-            if bird.rct.colliderect(bomb.rct):
+            if bird.rct.colliderect(bomb.rct):  # とりとボムの衝突判定
                 bird.change_img(8, screen)
                 fonto = pg.font.Font(None, 80)
                 txt = fonto.render("Game Over", True, (255, 0, 0))
@@ -201,7 +228,7 @@ def main():
             for k, beam in enumerate(beams):
                 if beam is not None:    
                     if beam.rct.colliderect(bomb.rct):
-                    # ビームと爆弾が衝突したら，ビームを消す
+                        explosions.append(Explosion(bomb.rct.center))
                         beams[k] = None  # ビームを消す
                         bombs[j] = None  # 爆弾を消す
                         score.score += 1  # スコアを加算
@@ -210,7 +237,10 @@ def main():
             bombs = [bomb for bomb in bombs if bomb is not None] #  撃ち落されていない爆弾だけのリスト作成
             beams = [beam for beam in beams if beam is not None] #  撃ち落されていないビームだけのリスト作成
             beams = [beam for beam in beams if check_bound(beam.rct) == (True, True)]
-        
+            explosions = [explosion for explosion in explosions if explosion.life > 0] #  爆発しているもののリスト作成
+            for explosion in explosions:
+                explosion.update(screen)
+
         key_lst = pg.key.get_pressed()
         bird.update(key_lst, screen)
         for beam in beams:

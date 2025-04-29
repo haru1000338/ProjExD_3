@@ -195,7 +195,7 @@ def main():
     # bomb = Bomb((255, 0, 0), 10)
     bombs = [Bomb((255, 0, 0), 10) for _ in range(NUM_OF_BOMBS)]  # 爆弾のリスト
     score = Score()
-    beam = None
+    # beam = None
     beams = [] # ビームのリスト
     explosions = []
     clock = pg.time.Clock()

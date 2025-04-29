@@ -171,6 +171,7 @@ def main():
                     # ビームと爆弾が衝突したら，ビームを消す
                     beam = None  # ビームを消す
                     bomb = None  # 爆弾を消す
+                    bird.change_img(6, screen)
 
         key_lst = pg.key.get_pressed()
         bird.update(key_lst, screen)

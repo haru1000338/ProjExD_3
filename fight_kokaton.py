@@ -170,6 +170,7 @@ def main():
     bombs = [Bomb((255, 0, 0), 10) for _ in range(NUM_OF_BOMBS)]  # 爆弾のリスト
     score = Score()
     beam = None
+    beams = [] # ビームのリスト
     clock = pg.time.Clock()
     tmr = 0
 
@@ -179,7 +180,8 @@ def main():
                 return
             if event.type == pg.KEYDOWN and event.key == pg.K_SPACE:
                 # スペースキー押下でBeamクラスのインスタンス生成
-                beam = Beam(bird)            
+                beam = Beam(bird)
+                beams.append(beam)  # # ビームをリストに追加    
         screen.blit(bg_img, [0, 0])
         
         # if bomb is not None:
@@ -195,19 +197,23 @@ def main():
 
         
         for j, bomb in enumerate(bombs):
-            if beam is not None:    
-            # if bomb is not None:  # bombがNoneでないことを確認
-                if beam.rct.colliderect(bomb.rct):
+                # ビームと爆弾が衝突したら，ビームを消す
+            for k, beam in enumerate(beams):
+                if beam is not None:    
+                    if beam.rct.colliderect(bomb.rct):
                     # ビームと爆弾が衝突したら，ビームを消す
-                    beam = None  # ビームを消す
-                    bombs[j] = None  # 爆弾を消す
-                    score.score += 1  # スコアを加算
-                    bird.change_img(6, screen)
+                        beams[k] = None  # ビームを消す
+                        bombs[j] = None  # 爆弾を消す
+                        score.score += 1  # スコアを加算
+                        beams = [beam for beam in beams if beam is not None] #  当たっていないビームだけのリスト作成
+                        bird.change_img(6, screen)
             bombs = [bomb for bomb in bombs if bomb is not None] #  撃ち落されていない爆弾だけのリスト作成
-
+            beams = [beam for beam in beams if beam is not None] #  撃ち落されていないビームだけのリスト作成
+            beams = [beam for beam in beams if check_bound(beam.rct) == (True, True)]
+        
         key_lst = pg.key.get_pressed()
         bird.update(key_lst, screen)
-        if beam is not None:
+        for beam in beams:
             beam.update(screen)
         # if bomb is not None:
         for bomb in bombs:
